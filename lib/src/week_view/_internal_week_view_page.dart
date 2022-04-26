@@ -5,6 +5,7 @@
 import 'package:flutter/material.dart';
 
 import '../components/_internal_components.dart';
+import '../constants.dart';
 import '../event_arrangers/event_arrangers.dart';
 import '../event_controller.dart';
 import '../modals.dart';
@@ -18,9 +19,6 @@ class InternalWeekViewPage<T> extends StatelessWidget {
 
   /// Height of the page.
   final double height;
-
-  /// Dates to display on page.
-  final List<DateTime> dates;
 
   /// Builds tile for a single event.
   final EventTileBuilder<T> eventTileBuilder;
@@ -63,7 +61,7 @@ class InternalWeekViewPage<T> extends StatelessWidget {
   final double verticalLineOffset;
 
   /// Builder for week day title.
-  final DateWidgetBuilder weekDayBuilder;
+  final DayWidgetBuilder weekDayBuilder;
 
   /// Height of week title.
   final double weekTitleHeight;
@@ -74,6 +72,9 @@ class InternalWeekViewPage<T> extends StatelessWidget {
   /// Called when user taps on event tile.
   final CellTapCallback<T>? onTileTap;
 
+  /// Limit displayed hours on schedule.
+  final int? minHour, maxHour;
+
   /// A single page for week view.
   const InternalWeekViewPage({
     Key? key,
@@ -81,7 +82,6 @@ class InternalWeekViewPage<T> extends StatelessWidget {
     required this.weekTitleHeight,
     required this.weekDayBuilder,
     required this.width,
-    required this.dates,
     required this.eventTileBuilder,
     required this.controller,
     required this.timeLineBuilder,
@@ -97,18 +97,18 @@ class InternalWeekViewPage<T> extends StatelessWidget {
     required this.verticalLineOffset,
     required this.weekTitleWidth,
     required this.onTileTap,
+    this.minHour,
+    this.maxHour,
   }) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
     return Container(
       height: height + weekTitleHeight,
-      width: width,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.end,
         children: [
           SizedBox(
-            width: width,
             child: Row(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
@@ -117,13 +117,11 @@ class InternalWeekViewPage<T> extends StatelessWidget {
                   width: timeLineWidth,
                 ),
                 ...List.generate(
-                  dates.length,
+                  6,
                   (index) => SizedBox(
                     height: weekTitleHeight,
                     width: weekTitleWidth,
-                    child: weekDayBuilder(
-                      dates[index],
-                    ),
+                    child: weekDayBuilder(Constants.weekTitles[index]),
                   ),
                 )
               ],
@@ -131,6 +129,7 @@ class InternalWeekViewPage<T> extends StatelessWidget {
           ),
           Expanded(
             child: SingleChildScrollView(
+              physics: ClampingScrollPhysics(),
               child: SizedBox(
                 height: height,
                 width: width,
@@ -139,6 +138,8 @@ class InternalWeekViewPage<T> extends StatelessWidget {
                     CustomPaint(
                       size: Size(width, height),
                       painter: HourLinePainter(
+                        minHour: minHour ?? 7,
+                        maxHour: maxHour ?? 21,
                         lineColor: hourIndicatorSettings.color,
                         lineHeight: hourIndicatorSettings.height,
                         offset: timeLineWidth + hourIndicatorSettings.offset,
@@ -158,13 +159,14 @@ class InternalWeekViewPage<T> extends StatelessWidget {
                     Align(
                       alignment: Alignment.centerRight,
                       child: SizedBox(
-                        width: weekTitleWidth * dates.length,
+                        width: weekTitleWidth * 6,
                         height: height,
                         child: Row(
                           children: [
                             ...List.generate(
-                              dates.length,
+                              6,
                               (index) => Container(
+                                key: Key(index.toString()),
                                 decoration: BoxDecoration(
                                   border: Border(
                                     right: BorderSide(
@@ -177,13 +179,12 @@ class InternalWeekViewPage<T> extends StatelessWidget {
                                 width: weekTitleWidth,
                                 child: EventGenerator<T>(
                                   height: height,
-                                  date: dates[index],
+                                  date: Constants.weekTitles[index],
                                   onTileTap: onTileTap,
                                   width: weekTitleWidth,
                                   eventArranger: eventArranger,
                                   eventTileBuilder: eventTileBuilder,
-                                  events:
-                                      controller.getEventsOnDay(dates[index]),
+                                  events: controller.getEventsOnDay(index),
                                   heightPerMinute: heightPerMinute,
                                 ),
                               ),
@@ -198,6 +199,8 @@ class InternalWeekViewPage<T> extends StatelessWidget {
                       height: height,
                       timeLineOffset: timeLineOffset,
                       timeLineBuilder: timeLineBuilder,
+                      minHour: minHour ?? 7,
+                      maxHour: maxHour ?? 21,
                     ),
                   ],
                 ),

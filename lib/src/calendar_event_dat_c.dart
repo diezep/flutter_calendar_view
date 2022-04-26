@@ -15,12 +15,12 @@ class CalendarEventData<T> {
   /// Defines the start time of the event.
   /// [endTime] and [startTime] will defines time on same day.
   /// This is required when you are using [CalendarEventData] for [DayView]
-  final TimeOfDay? startTime;
+  final DateTime? startTime;
 
   /// Defines the end time of the event.
   /// [endTime] and [startTime] defines time on same day.
   /// This is required when you are using [CalendarEventData] for [DayView]
-  final TimeOfDay? endTime;
+  final DateTime? endTime;
 
   /// Title of the event.
   final String title;
@@ -47,10 +47,8 @@ class CalendarEventData<T> {
     this.endTime,
     DateTime? endDate,
     required this.date,
-    required this.day,
   }) : _endDate = endDate;
 
-  final int day;
   DateTime get endDate => _endDate ?? date;
 
   Map<String, dynamic> toJson() => {
@@ -61,7 +59,6 @@ class CalendarEventData<T> {
         "title": title,
         "description": description,
         "endDate": endDate,
-        "day": day,
       };
 
   @override

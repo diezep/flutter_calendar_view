@@ -14,15 +14,19 @@ typedef CellBuilder<T> = Widget Function(
 );
 
 typedef EventTileBuilder<T> = Widget Function(
-  DateTime date,
+  String date,
   List<CalendarEventData<T>> events,
   Rect boundary,
-  DateTime startDuration,
-  DateTime endDuration,
+  TimeOfDay startDuration,
+  TimeOfDay endDuration,
 );
 
 typedef WeekDayBuilder = Widget Function(
   int day,
+);
+
+typedef DayWidgetBuilder = Widget Function(
+  String day,
 );
 
 typedef DateWidgetBuilder = Widget Function(
@@ -45,8 +49,7 @@ typedef WeekPageHeaderBuilder = Widget Function(
 typedef TileTapCallback<T> = void Function(
     CalendarEventData<T> event, DateTime date);
 
-typedef CellTapCallback<T> = void Function(
-    List<CalendarEventData<T>> events, DateTime date);
+typedef CellTapCallback<T> = void Function(List<CalendarEventData<T>> events);
 
 typedef EventFilter<T> = List<CalendarEventData<T>> Function(
     DateTime date, List<CalendarEventData<T>> events);

@@ -4,8 +4,6 @@
 
 import 'package:flutter/material.dart';
 
-import 'constants.dart';
-
 /// Paints 24 hour lines.
 class HourLinePainter extends CustomPainter {
   /// Color of hour line
@@ -13,6 +11,12 @@ class HourLinePainter extends CustomPainter {
 
   /// Height of hour line
   final double lineHeight;
+
+  /// Color of hour line
+  final int minHour;
+
+  /// Height of hour line
+  final int maxHour;
 
   /// Offset of hour line from left.
   final double offset;
@@ -28,6 +32,8 @@ class HourLinePainter extends CustomPainter {
 
   /// Paints 24 hour lines.
   HourLinePainter({
+    required this.minHour,
+    required this.maxHour,
     required this.lineColor,
     required this.lineHeight,
     required this.minuteHeight,
@@ -42,8 +48,8 @@ class HourLinePainter extends CustomPainter {
       ..color = lineColor
       ..strokeWidth = lineHeight;
 
-    for (var i = 1; i < Constants.hoursADay; i++) {
-      final dy = i * minuteHeight * 60;
+    for (var i = minHour; i < maxHour; i++) {
+      final dy = (i - minHour) * minuteHeight * 60;
       canvas.drawLine(Offset(offset, dy), Offset(size.width, dy), paint);
     }
 

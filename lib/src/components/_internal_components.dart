@@ -7,7 +7,6 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 
 import '../calendar_event_data.dart';
-import '../constants.dart';
 import '../event_arrangers/event_arrangers.dart';
 import '../extensions.dart';
 import '../modals.dart';
@@ -104,6 +103,12 @@ class TimeLine extends StatelessWidget {
   /// Total height of timeline.
   final double height;
 
+  /// Minimum hour to display.
+  final int minHour;
+
+  /// Maximum hour to display.
+  final int maxHour;
+
   /// Offset for time line
   final double timeLineOffset;
 
@@ -118,6 +123,8 @@ class TimeLine extends StatelessWidget {
       required this.timeLineWidth,
       required this.hourHeight,
       required this.height,
+      required this.minHour,
+      required this.maxHour,
       required this.timeLineOffset,
       required this.timeLineBuilder})
       : super(key: key);
@@ -134,15 +141,16 @@ class TimeLine extends StatelessWidget {
       ),
       child: Stack(
         children: [
-          for (int i = 1; i < Constants.hoursADay; i++)
+          for (int i = minHour; i < maxHour; i++)
             Positioned(
-              top: hourHeight * i - timeLineOffset,
+              top: hourHeight * (i - minHour) - timeLineOffset,
               left: 0,
               right: 0,
-              bottom: height - (hourHeight * (i + 1)) + timeLineOffset,
+              bottom:
+                  height - (hourHeight * (i + 1 - minHour)) + timeLineOffset,
               child: Container(
                 height: hourHeight,
-                width: timeLineWidth,
+                width: timeLineWidth * 2,
                 child: timeLineBuilder.call(
                   DateTime(
                     _date.year,
@@ -180,7 +188,7 @@ class EventGenerator<T> extends StatelessWidget {
   final EventTileBuilder<T> eventTileBuilder;
 
   /// Defines date for which events will be displayed in given display area.
-  final DateTime date;
+  final String date;
 
   /// Called when user taps on event tile.
   final CellTapCallback<T>? onTileTap;
@@ -216,17 +224,17 @@ class EventGenerator<T> extends StatelessWidget {
         left: events[index].left,
         right: events[index].right,
         child: GestureDetector(
-          onTap: () => onTileTap?.call(events[index].events, date),
+          onTap: () => onTileTap?.call(events[index].events),
           child: eventTileBuilder(
             date,
             events[index].events,
             Rect.fromLTWH(
-                events[index].left,
+                events[index].left + 32,
                 events[index].top,
                 width - events[index].right - events[index].left,
                 height - events[index].bottom - events[index].top),
-            events[index].startDuration ?? DateTime.now(),
-            events[index].endDuration ?? DateTime.now(),
+            events[index].startDuration ?? TimeOfDay.now(),
+            events[index].endDuration ?? TimeOfDay.now(),
           ),
         ),
       );

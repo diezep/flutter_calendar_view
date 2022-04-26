@@ -17,13 +17,11 @@ class EventController<T> extends ChangeNotifier {
   /// function which will be used to display events on given day in
   /// [MonthView], [DayView] and [WeekView].
   ///
-  final EventFilter<T>? eventFilter;
+  late final EventFilter<T>? eventFilter;
 
   /// Calendar controller to control all the events related operations like,
   /// adding event, removing event, etc.
-  EventController({
-    this.eventFilter,
-  });
+  EventController({this.eventFilter});
 
   final _events = <_YearEvent<T>>[];
 
@@ -90,43 +88,12 @@ class EventController<T> extends ChangeNotifier {
   ///
   /// To overwrite default behaviour of this function,
   /// provide [eventFilter] argument in [EventController] constructor.
-  List<CalendarEventData<T>> getEventsOnDay(DateTime date) {
-    if (eventFilter != null) return eventFilter!.call(date, this.events);
-
+  List<CalendarEventData<T>> getEventsOnDay(int day) {
     final events = <CalendarEventData<T>>[];
 
-    for (var i = 0; i < _events.length; i++) {
-      if (_events[i].year == date.year) {
-        final monthEvents = _events[i]._months;
-
-        for (var j = 0; j < monthEvents.length; j++) {
-          if (monthEvents[j].month == date.month) {
-            final calendarEvents = monthEvents[j]._events;
-
-            for (var k = 0; k < calendarEvents.length; k++) {
-              if (calendarEvents[k].date.day == date.day)
-                events.add(calendarEvents[k]);
-            }
-          }
-        }
-      }
-    }
-
-    final daysFromRange = <DateTime>[];
-    for (final rangingEvent in _rangingEventList) {
-      for (var i = 0;
-          i <= rangingEvent.endDate.difference(rangingEvent.date).inDays;
-          i++) {
-        daysFromRange.add(rangingEvent.date.add(Duration(days: i)));
-      }
-      if (rangingEvent.date.isBefore(rangingEvent.endDate)) {
-        for (final eventDay in daysFromRange) {
-          if (eventDay.year == date.year &&
-              eventDay.month == date.month &&
-              eventDay.day == date.day) {
-            events.add(rangingEvent);
-          }
-        }
+    for (var i = 0; i < _eventList.length; i++) {
+      if (_eventList[i].day == day) {
+        events.add(_eventList[i]);
       }
     }
 

@@ -56,7 +56,6 @@ extension DateTimeExtensions on DateTime {
       start.add(Duration(days: 3)),
       start.add(Duration(days: 4)),
       start.add(Duration(days: 5)),
-      start.add(Duration(days: 6)),
     ];
   }
 
@@ -72,13 +71,13 @@ extension DateTimeExtensions on DateTime {
     return monthDays;
   }
 
-  /// Gives formatted date in form of 'month - year'.
-  String get formatted => "$month-$year";
-
   /// Returns total minutes this date is pointing at.
   /// if [DateTime] object is, DateTime(2021, 5, 13, 12, 4, 5)
   /// Then this getter will return 12*60 + 4 which evaluates to 724.
   int get getTotalMinutes => hour * 60 + minute;
+
+  /// Gives formatted date in form of 'month - year'.
+  String get formatted => "$month-$year";
 
   /// Returns a new [DateTime] object with hour and minutes calculated from
   /// [totalMinutes].
@@ -89,6 +88,13 @@ extension DateTimeExtensions on DateTime {
         totalMinutes ~/ 60,
         totalMinutes % 60,
       );
+}
+
+extension TimeOfDayExtensions on TimeOfDay {
+  /// Returns total minutes this date is pointing at.
+  /// if [DateTime] object is, DateTime(2021, 5, 13, 12, 4, 5)
+  /// Then this getter will return 12*60 + 4 which evaluates to 724.
+  int get getTotalMinutes => hour * 60 + minute;
 }
 
 extension ColorExtension on Color {

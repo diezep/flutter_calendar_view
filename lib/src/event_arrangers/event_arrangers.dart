@@ -2,12 +2,12 @@
 // Use of this source code is governed by a MIT-style license
 // that can be found in the LICENSE file.
 
-import 'dart:math' as math;
+import 'package:flutter/material.dart';
 
 import '../calendar_event_data.dart';
 import '../extensions.dart';
 
-part 'merge_event_arranger.dart';
+part 'offset_arrange.dart';
 part 'side_event_arranger.dart';
 
 abstract class EventArranger<T> {
@@ -49,10 +49,10 @@ class OrganizedCalendarEventData<T> {
   final List<CalendarEventData<T>> events;
 
   /// Start duration of event/event list.
-  final DateTime? startDuration;
+  final TimeOfDay? startDuration;
 
   /// End duration of event/event list.
-  final DateTime? endDuration;
+  final TimeOfDay? endDuration;
 
   /// Provides event data with its [left], [right], [top], and [bottom]
   /// boundary.
@@ -67,8 +67,8 @@ class OrganizedCalendarEventData<T> {
   });
 
   OrganizedCalendarEventData.empty()
-      : startDuration = DateTime.now(),
-        endDuration = DateTime.now(),
+      : startDuration = TimeOfDay.now(),
+        endDuration = TimeOfDay.now(),
         right = 0,
         left = 0,
         events = const [],

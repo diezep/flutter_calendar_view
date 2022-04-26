@@ -2,7 +2,6 @@
 // Use of this source code is governed by a MIT-style license
 // that can be found in the LICENSE file.
 
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
 import '../calendar_constants.dart';
@@ -39,6 +38,12 @@ class WeekView<T> extends StatefulWidget {
 
   /// Maximum day to display in week view.
   final DateTime? maxDay;
+
+  /// Minimum hour to display in week view.
+  final int? minHour;
+
+  /// Maximum hour to display in week view.
+  final int? maxHour;
 
   /// Initial week to display in week view.
   final DateTime? initialDay;
@@ -79,13 +84,16 @@ class WeekView<T> extends StatefulWidget {
   final double weekTitleHeight;
 
   /// Builder to build week day.
-  final DateWidgetBuilder? weekDayBuilder;
+  final DayWidgetBuilder? weekDayBuilder;
 
   /// Background color of week view page.
   final Color backgroundColor;
 
   /// Called when user taps on event tile.
   final CellTapCallback<T>? onEventTap;
+
+  /// Called when user wants to refresh events.
+  final Future<void> Function()? onRefresh;
 
   /// Main widget for week view.
   const WeekView({
@@ -100,6 +108,8 @@ class WeekView<T> extends StatefulWidget {
     this.width,
     this.minDay,
     this.maxDay,
+    this.minHour,
+    this.maxHour,
     this.initialDay,
     this.hourIndicatorSettings,
     this.timeLineBuilder,
@@ -112,6 +122,7 @@ class WeekView<T> extends StatefulWidget {
     this.weekDayBuilder,
     this.backgroundColor = Colors.white,
     this.onEventTap,
+    this.onRefresh,
   }) : super(key: key);
 
   @override
@@ -128,8 +139,10 @@ class WeekViewState<T> extends State<WeekView<T>> {
   late DateTime _currentEndDate;
   late DateTime _maxDate;
   late DateTime _minDate;
+  late int _maxHour;
+  late int _minHour;
   late DateTime _initialDay;
-  late int _totalWeeks;
+
   late int _currentIndex;
 
   late EventArranger<T> _eventArranger;
@@ -142,10 +155,10 @@ class WeekViewState<T> extends State<WeekView<T>> {
   late DateWidgetBuilder _timeLineBuilder;
   late EventTileBuilder<T> _eventTileBuilder;
   late WeekPageHeaderBuilder _weekHeaderBuilder;
-  late DateWidgetBuilder _weekDayBuilder;
+  late DayWidgetBuilder _weekDayBuilder;
 
   late double _weekTitleWidth;
-  final _weekDays = 7;
+  final _weekDays = 6;
 
   bool _controllerAdded = false;
 
@@ -162,6 +175,9 @@ class WeekViewState<T> extends State<WeekView<T>> {
     _minDate = widget.minDay ?? CalendarConstants.epochDate;
     _maxDate = widget.maxDay ?? CalendarConstants.maxDate;
 
+    _minHour = widget.minHour ?? 7;
+    _maxHour = widget.maxHour ?? 9;
+
     _initialDay = widget.initialDay ?? DateTime.now();
 
     if (_initialDay.isBefore(_minDate)) {
@@ -174,10 +190,9 @@ class WeekViewState<T> extends State<WeekView<T>> {
     _currentStartDate = dates.first;
     _currentEndDate = dates.last;
 
-    _totalWeeks = _maxDate.getWeekDifference(_minDate) + 1;
     _currentIndex = _currentStartDate.getWeekDifference(_minDate) + 1;
     _hourHeight = widget.heightPerMinute * 60;
-    _height = _hourHeight * Constants.hoursADay;
+    _height = _hourHeight * ((_maxHour - _minHour));
     _timeLineOffset = widget.timeLineOffset;
     _pageController = PageController(initialPage: _currentIndex);
     _eventArranger = widget.eventArranger ?? SideEventArranger<T>();
@@ -242,62 +257,48 @@ class WeekViewState<T> extends State<WeekView<T>> {
 
   @override
   Widget build(BuildContext context) {
-    return SafeArea(
-      child: SizedBox(
-        width: _width,
-        child: DecoratedBox(
-          decoration: BoxDecoration(
-            color: widget.backgroundColor,
-          ),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              _weekHeaderBuilder(_currentStartDate, _currentEndDate),
-              Expanded(
-                child: SizedBox(
+    return SizedBox(
+      key: UniqueKey(),
+      width: _width,
+      child: DecoratedBox(
+        decoration: BoxDecoration(
+          color: widget.backgroundColor,
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            _weekHeaderBuilder(_currentStartDate, _currentEndDate),
+            Expanded(
+              child: SizedBox(
                   height: _height,
                   width: _width,
-                  child: PageView.builder(
-                    itemCount: _totalWeeks,
-                    controller: _pageController,
-                    onPageChanged: _onPageChange,
-                    itemBuilder: (_, index) {
-                      final dates = _minDate
-                          .add(Duration(days: (index - 1) * _weekDays))
-                          .datesOfWeek();
-
-                      return InternalWeekViewPage<T>(
-                        key: ValueKey(
-                            _hourHeight.toString() + dates[0].toString()),
-                        height: _height,
-                        width: _width,
-                        weekTitleWidth: _weekTitleWidth,
-                        weekTitleHeight: widget.weekTitleHeight,
-                        weekDayBuilder: _weekDayBuilder,
-                        liveTimeIndicatorSettings: _liveTimeIndicatorSettings,
-                        timeLineBuilder: _timeLineBuilder,
-                        onTileTap: widget.onEventTap,
-                        eventTileBuilder: _eventTileBuilder,
-                        heightPerMinute: widget.heightPerMinute,
-                        hourIndicatorSettings: _hourIndicatorSettings,
-                        dates: dates,
-                        showLiveLine: widget.showLiveTimeLineInAllDays ||
-                            _showLiveTimeIndicator(dates),
-                        timeLineOffset: _timeLineOffset,
-                        timeLineWidth: _timeLineWidth,
-                        verticalLineOffset: 0,
-                        showVerticalLine: true,
-                        controller: _controller,
-                        hourHeight: _hourHeight,
-                        eventArranger: _eventArranger,
-                      );
-                    },
-                  ),
-                ),
-              ),
-            ],
-          ),
+                  child: InternalWeekViewPage<T>(
+                    key: UniqueKey(),
+                    height: _height,
+                    width: _width,
+                    weekTitleWidth: _weekTitleWidth,
+                    weekTitleHeight: widget.weekTitleHeight,
+                    weekDayBuilder: _weekDayBuilder,
+                    liveTimeIndicatorSettings: _liveTimeIndicatorSettings,
+                    timeLineBuilder: _timeLineBuilder,
+                    onTileTap: widget.onEventTap,
+                    eventTileBuilder: _eventTileBuilder,
+                    heightPerMinute: widget.heightPerMinute,
+                    hourIndicatorSettings: _hourIndicatorSettings,
+                    showLiveLine: widget.showLiveTimeLineInAllDays,
+                    timeLineOffset: _timeLineOffset,
+                    timeLineWidth: _timeLineWidth,
+                    verticalLineOffset: 0,
+                    showVerticalLine: true,
+                    controller: _controller,
+                    hourHeight: _hourHeight,
+                    eventArranger: _eventArranger,
+                    minHour: _minHour,
+                    maxHour: _maxHour,
+                  )),
+            ),
+          ],
         ),
       ),
     );
@@ -317,14 +318,13 @@ class WeekViewState<T> extends State<WeekView<T>> {
   }
 
   /// Default builder for week line.
-  Widget _defaultWeekDayBuilder(DateTime date) {
+  Widget _defaultWeekDayBuilder(String day) {
     return Center(
       child: Column(
         mainAxisSize: MainAxisSize.min,
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Text(Constants.weekTitles[date.weekday - 1]),
-          Text(date.day.toString()),
+          Text(day),
         ],
       ),
     );
@@ -352,21 +352,21 @@ class WeekViewState<T> extends State<WeekView<T>> {
   /// Default timeline builder. This builder will be used if
   /// [widget.eventTileBuilder] is null
   Widget _defaultEventTileBuilder<T>(
-      DateTime date,
+      String day,
       List<CalendarEventData<T>> events,
       Rect boundary,
-      DateTime startDuration,
-      DateTime endDuration) {
+      TimeOfDay startDuration,
+      TimeOfDay endDuration) {
     if (events.isNotEmpty)
       return RoundedEventTile(
         borderRadius: BorderRadius.circular(6.0),
         title: events[0].title,
         titleStyle: TextStyle(
-          fontSize: 12,
+          fontSize: 10,
           color: events[0].color.accent,
         ),
         totalEvents: events.length,
-        padding: EdgeInsets.all(7.0),
+        padding: EdgeInsets.symmetric(horizontal: 4.0),
         backgroundColor: events[0].color,
       );
     else
@@ -483,9 +483,4 @@ class WeekViewState<T> extends State<WeekView<T>> {
   /// Returns the current visible date in week view.
   DateTime get currentDate => DateTime(
       _currentStartDate.year, _currentStartDate.month, _currentStartDate.day);
-
-  /// check if any dates contains current date or not.
-  /// Returns true if it does else false.
-  bool _showLiveTimeIndicator(List<DateTime> dates) =>
-      dates.any((date) => date.compareWithoutTime(DateTime.now()));
 }

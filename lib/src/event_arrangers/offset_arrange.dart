@@ -4,10 +4,14 @@
 
 part of 'event_arrangers.dart';
 
-class SideEventArranger<T> extends EventArranger<T> {
+class OffsetEventArranger<T> extends EventArranger<T> {
   /// This class will provide method that will arrange
   /// all the events side by side.
-  const SideEventArranger();
+
+  OffsetEventArranger({required this.minHour});
+
+  // Min hours from the start of the day.
+  int minHour;
 
   @override
   List<OrganizedCalendarEventData<T>> arrange({
@@ -67,10 +71,10 @@ class SideEventArranger<T> extends EventArranger<T> {
 
           final top =
               (event!.startTime?.getTotalMinutes ?? 0) * heightPerMinute -
-                  (heightPerMinute * 60 * 7);
+                  (heightPerMinute * 60 * minHour);
           final bottom = height -
               ((event.endTime?.getTotalMinutes ?? 0) * heightPerMinute -
-                  (heightPerMinute * 60 * 7));
+                  (heightPerMinute * 60 * minHour));
           final left = widthPerCol * i;
           final right = width - (left + widthPerCol);
 
@@ -96,6 +100,7 @@ class SideEventArranger<T> extends EventArranger<T> {
         }
       }
     }
+
     return arrangedEvent;
   }
 
