@@ -71,16 +71,25 @@ class RoundedEventTile extends StatelessWidget {
           if (title.isNotEmpty)
             Expanded(
                 child: Center(
-              child: Marquee(
-                pauseAfterRound: const Duration(seconds: 2),
-                blankSpace: 20,
-                style: titleStyle ??
-                    TextStyle(
-                      fontSize: 20,
-                      color: backgroundColor.accent,
+              child: title.length > 5
+                  ? Marquee(
+                      pauseAfterRound: const Duration(seconds: 2),
+                      blankSpace: 20,
+                      style: titleStyle ??
+                          TextStyle(
+                            fontSize: 20,
+                            color: backgroundColor.accent,
+                          ),
+                      text: title,
+                    )
+                  : Text(
+                      title,
+                      style: titleStyle ??
+                          TextStyle(
+                            fontSize: 20,
+                            color: backgroundColor.accent,
+                          ),
                     ),
-                text: title,
-              ),
             )),
         ],
       ),
